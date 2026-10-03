@@ -1,0 +1,2 @@
+'cFires4' depends on axioms: [propext, cFires4._native.native_decide.ax_1_1]
+'pFires4' depends on axioms: [pFires4._native.native_decide.ax_1_1]

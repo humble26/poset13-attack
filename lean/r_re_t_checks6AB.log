@@ -1,0 +1,1 @@
+'checks6AB_true' depends on axioms: [propext, checks6AB_true._native.native_decide.ax_1_1]
