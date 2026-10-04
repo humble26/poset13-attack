@@ -8,3 +8,4 @@ __pycache__/
 lean/.lake/
 *.olean
 *.ilean
+docxgen/node_modules/
