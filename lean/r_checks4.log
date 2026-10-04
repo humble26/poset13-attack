@@ -1,2 +1,3 @@
 'checks4_true' depends on axioms: [propext, checks4_true._native.native_decide.ax_1_1]
 exit=0
+elapsed=4s

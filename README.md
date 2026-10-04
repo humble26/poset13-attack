@@ -1,6 +1,11 @@
 # 偏序集 1/3–2/3 猜想 width-3 情形攻击：项目档案
 
-会话日期：2026-09-13 至 2026-09-27。本文件夹保存该次攻击的全部程序、数据与文档。
+会话日期：2026-09-13 至 **2026-10-04**。本文件夹保存该次攻击的全部程序、数据与文档。
+
+> **进度说明（2026-10-04 更新）**：本文档是**按会话追加**的，所以第 1–5 节停留在早期阶段，
+> 第 7 节之后才追到第三、四阶段。**完整结论、案例树与剩余缺口请读 `paper.md`（工作论文）**——
+> 它是 2026-10-04 的最新整理版本。本文第 2 节的"目标定理：开放"仍然成立（至今未证），
+> 但工具箱、已关闭子情形、已探明死路都比第 2 节所写多得多（见文末"进度状态总表"）。
 
 ## 1. 问题
 
@@ -107,25 +112,57 @@ width(P∖z) ≤ 2 ⟹ δ(P) ≥ 1/3。剩余步骤：证明"平衡守恒"（见
 
 ## 5. 复现指南
 
-Python（无需依赖）：
+Python（无需依赖，用 `fractions.Fraction` 精确分数运算，不要改成浮点）：
 ```
-cd python && python poset_experiments.py all     # 或 e1 / e2 / e3 / e4
+cd python && python poset_experiments.py all     # 早期四实验
+cd python && python step2/e5_ideal.py            # 第二阶段 E5–E8
+cd python && python step3/e17_final.py           # 第三阶段守恒验证（2.4 秒）
+cd python && python step3/e34_gcb7.py            # n=7 GCB 反例
 ```
 
-Lean（工具链 v4.33.1，GitHub 直连不可用时用镜像
-`https://ghproxy.net/https://github.com/leanprover/lean4/releases/download/v4.33.1/lean-4.33.1-windows.zip`，
-解压后 `PATH=$HOME/lean4/bin:$PATH`）：
+### Lean：一键驱动（推荐）
+
 ```
 cd lean
-lean -o Poset13Defs.olean Poset13Defs.lean          # 构建定义模块
-LEAN_PATH=. lean t_kernel.lean                      # 核内锚点（秒级）
-LEAN_PATH=. lean t_checks4.lean                     # n=4 全查（约 1 分钟）
-LEAN_PATH=. lean t_fires4.lean                      # 非空性（约 1 分钟）
-LEAN_PATH=. lean t_checks5.lean                     # n=5 全查（约 20 分钟）
-LEAN_PATH=. lean t_checks6AB.lean                   # n=6 A+B（约 30–60 分钟）
-# 每个文件打印 #print axioms 披露信任等级；预期全部 exit=0
+bash verify_all.sh light     # 快速组：核内锚点 + n=4 全查（约 10 秒）
+bash verify_all.sh core      # + 引理 D + n=5 全查 8 分片（约 20-40 分钟）
+bash verify_all.sh full      # + n=6 全查 16 分片 + A+B（32 核并行，约 1 小时）
 ```
+
+脚本自动定位工具链、构建模块、并行跑分片、**把退出码写进每个日志**，
+末尾打印汇总表并以退出码反映整体成败（`bash verify_all.sh all` = `full`）。
+
+> **Windows 用户**：`bash` 若不可用，用 `E:/Git/bin/bash.exe verify_all.sh full`。
+
+### Lean：手工命令
+
+工具链 v4.33.1。GitHub 直连不可用时用镜像
+`https://ghproxy.net/https://github.com/leanprover/lean4/releases/download/v4.33.1/lean-4.33.1-windows.zip`，
+解压后 `PATH=$HOME/lean4/bin:$PATH`。
+
+```
+cd lean
+# ⚠ 构建模块也必须带 LEAN_PATH=. —— 否则报 unknown module prefix 'Poset13Defs'
+LEAN_PATH=. lean -o Poset13Defs.olean  Poset13Defs.lean
+LEAN_PATH=. lean -o Poset13Step3.olean Poset13Step3.lean
+LEAN_PATH=. lean t_kernel.lean                      # 核内锚点（秒级）
+LEAN_PATH=. lean t_s4.lean                          # n=4 全查（4 秒）
+LEAN_PATH=. lean t_checks4.lean                     # n=4 五类检查
+LEAN_PATH=. lean t_fires4.lean                      # 防卫条件非空性
+LEAN_PATH=. lean t_lemmad.lean                      # 引理 D + 条带公式
+LEAN_PATH=. lean t_s5_0.lean                        # n=5 全查之一（8 分片）
+LEAN_PATH=. lean t_s6_0.lean                        # n=6 全查之一（16 分片，约 2.5-4.5 分钟）
+LEAN_PATH=. lean t_checks6AB.lean                   # n=6 引理 A+B（30-60 分钟）
+# 每个文件打印 #print axioms 披露信任等级
+```
+
+**分片区间**（已核对，无缝无重叠）：
+`s5_0..7` 覆盖 0–1024；`s6_0..15` 覆盖 0–32768，每片 2048。
+
 单文件版 `Poset13.lean` 含全部定义与定理，可 `lean Poset13.lean` 直跑（较慢）。
+
+> `t_dbg3.lean` 是**交互式调试探针**（`#eval` 逐层定位失败项），不是验证文件，
+> 正常运行会输出诊断文本、无退出码，属预期行为。
 
 ## 7. 第二阶段：守恒机制与理想分解（2026-09-27 会话）
 
@@ -343,20 +380,99 @@ E24 实测（401 个多切割失败案例）：d ∈ [−1/2, 3/7]，双向皆�
 
 ## 8. 文件清单
 
+### 文档
+```
+paper.md                 ★ 工作论文（2026-10-04 最新，完整结论 + 案例树 + 剩余缺口）
+paper.docx               论文 Word 版（预印本样式）
+README.md                本文档（按会话追加，落后于 paper.md）
+```
+
+### Lean 形式化
 ```
 lean/Poset13.lean        Lean 4 完整单文件（定义 + 检验器 + 穷举定理）
 lean/Poset13Defs.lean    定义模块（供分定理验证文件 import）
+lean/Poset13Step3.lean   第三阶段检验器模块（F/G/S1/S2/三明治 + 子集 DP eSub）
+lean/verify_all.sh       ★ 验证驱动器（一键 / 分级 / 并行分片 / 写退出码）
+lean/lakefile.lean       Lake 构建配置
+lean/lean-toolchain      工具链版本钉（v4.33.1）
+
 lean/t_kernel.lean       核内锚点验证（chain/antichain 实例）
+lean/t_s4.lean           n=4 全查（第三阶段 harness，4 秒）
 lean/t_checks4.lean      n=4 全查（五类检查 × 64 候选）
 lean/t_fires4.lean       C/P1 防卫条件非空性
+lean/t_lemmad.lean       引理 D + 条带公式（n=4,5 全查）
 lean/t_checks5.lean      n=5 全查（五类检查 × 1024 候选）
 lean/t_checks6AB.lean    n=6 引理 A+B（32768 候选）
-lean/t_lemmad.lean       引理 D + 条带公式（n=4,5 全查）
-lean/r_*.log             每个验证文件的最终运行日志（含 #print axioms）
-lean/lakefile.lean       Lake 构建配置
-lean/lean-toolchain      工具链版本钉
-python/poset_experiments.py  四个数值实验（会话输出数值已注明）
-python/mirror4.py        Lean 检验器的 Python 精确镜像（bug 定位工具）
-python/step2/            第二阶段实验（E5–E8）
-README.md                本文档
+lean/t_s5_0..7.lean      n=5 全查分片（8 片，覆盖 0–1024）
+lean/t_s6_0..15.lean     n=6 全查分片（16 片，覆盖 0–32768）
+lean/t_dbg3.lean         调试探针（#eval 定位失败项，非验证文件）
+
+lean/r_*.log             每个验证文件的运行日志（含 #print axioms + exit 码 + 耗时）
 ```
+
+### Python 数值实验（全部 Fraction 精确运算）
+```
+python/poset_experiments.py  早期四个数值实验
+python/mirror4.py            Lean 检验器的 Python 精确镜像（bug 定位工具）
+python/step2/                第二阶段 E5–E8（理想分解 / 分类 / 采样 / 重层 / 角点）
+python/step3/                第三、四阶段 E9–E38（机制解剖 / 案例树 / 残例 / 构型）
+```
+
+### 实验编号索引（E5–E38）
+| 编号 | 内容 |
+|---|---|
+| E5–E8 | 理想分解验证、守恒二择一、θ-切割、重层、角点对 |
+| E9–E11 | 失败机制解剖、账本分解、θ-结构断言 |
+| E13/E18 | 极值结构（n=6 全部 δ=1/3 案例均 width=2） |
+| E14/E17 | 守恒律与挤压的穷举验证（2330/2330 零反例） |
+| E16 | 账本恒等式（1576/1576） |
+| E19 | M-帧重加权与 Δ-恒等式（313/313、135/135） |
+| E20/E21 | 边界游走与转折着陆（Δ 单步最大 4/7，真越界 6 例） |
+| E22/E23 | S3 首版否证（平台型反例）、自由走廊工具箱（角点公式、中心对称、Vandermonde） |
+| E24/E25 | Φ-双射亏缺公式、中心对称存活判据 |
+| E26 | 自由走廊 1/3–2/3 新证明验证（64/64） |
+| E28–E30 | 钉死区简化、顶点集中归约、路径对应 |
+| E32–E34 | 极值双平衡猜想 GCB（n≤6 成立，n=7 稀有反例） |
+| E35/E36 | z-孤立归约、D-对无穿越、同侧存在性 |
+| E37/E38 | 残例分类、残例转折着陆、阶梯角点否证 |
+
+## 9. 进度状态总表（2026-10-04 复核）
+
+**目标定理仍未证明。** 剩余缺口是守恒引理（猜想 6.1）的两条待证引理。
+
+| 层级 | 内容 | 状态 |
+|---|---|---|
+| 已证（书面 + n≤6 机器验证） | 引理 3.1–3.11、4.1–4.2、5.1–5.4、7.1–7.3 | ✅ |
+| 已证（归约） | 目标定理 ⟺ 守恒（6.2）、多数扩张刻画（5.6） | ✅ |
+| 已证（新证明，E26 验证 64/64） | 定理 7.4：自由走廊的 1/3–2/3 | ✅ |
+| 已关闭子情形 | z 全可比（5.5）、z-孤立（9.A）、单切割盒（9.B）、对称+居中+奇×奇（7.2）、自由走廊（7.4） | ✅ |
+| 穷举验证（零例外，未证） | S1 细化守恒、S2 混合角点定向、C1 角点 | ⚠️ |
+| 穷举验证（待证） | 引理 9.D 同侧存在性（427+468 零反例） | ⚠️ |
+| 穷举验证（待证） | 引理 9.E 残例转折着陆（2565/2565 零反例） | ⚠️ |
+| **开放** | 守恒引理 6.1 的 9.D + 9.E | ❌ |
+
+**已探明死路八条**（详见 `paper.md` 9.5，勿重走）：平滑引理、假设 H、单步 Δ ≤ 1/3、
+S3 首版、居中 z 单独保对称、底对 (a₁,b₁) 平衡、赛跑单调性 R(I)、阶梯角点对。
+
+**元规律**：所有"指定具体对"的猜想都在某处失效，而**存在性层面**的命题
+（9.D、9.E）零反例 —— 最终证明必须走完整的定量机器（构型 (A)–(D) + 顶点集中 WV + 挤压），
+不存在单点捷径。
+
+### 2026-10-04 独立复核
+
+第三方重跑结果（工具链 v4.33.1，Python 3.13.12）：
+
+| 项 | 结果 |
+|---|---|
+| `t_kernel` / `t_s4` | ✅ exit=0（4 秒） |
+| `t_s6_0..15`（n=6 全 32768 候选 × 全链划分） | ✅ **16 分片全部 exit=0** |
+| 分片区间核对 | 16 片无缝无重叠覆盖 0–32768 ✅ |
+| E17 守恒验证 | ✅ failparts 2330 → violations 0 |
+| E34 n=7 GCB 反例 | ✅ 精确复现（p = 16/25、9/25） |
+| E38 阶梯角点否证 | ✅ 18/1300，p = 5/7 恰越过 2/3 |
+
+公理披露一律为 `[propext, Lean.ofReduceBool]`（即 `native_decide` 的标准信任公理），
+未使用其他公理。**论文最重的声称（S1/S2 升级为 n≤6 穷举级）站得住。**
+
+> E33 的 n=7 实际输出比论文描述更细：46 例中 43 例双平衡 + 3 例 none
+> （无反例但非双平衡），论文只写了"n=7 采样出现稀有反例"。

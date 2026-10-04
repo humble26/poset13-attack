@@ -1,7 +1,5 @@
-t_kernel.lean:3:8: error: `chain_isPoset` has already been declared
-t_kernel.lean:4:8: error: `chain_e` has already been declared
-t_kernel.lean:5:8: error: `anti_e` has already been declared
 'chain_isPoset' does not depend on any axioms
 'chain_e' depends on axioms: [propext]
 'anti_e' depends on axioms: [propext]
-exit=1
+exit=0
+elapsed=4s

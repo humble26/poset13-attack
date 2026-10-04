@@ -1,1 +1,3 @@
 's_true' depends on axioms: [propext, s_true._native.native_decide.ax_1_1]
+exit=0
+elapsed=157s
