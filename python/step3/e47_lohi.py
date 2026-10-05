@@ -83,7 +83,7 @@ def main():
                                 cc = sum(1 for x in range(0, b1 + 1) for y in range(0, sp - x)
                                          if j <= x + y + 1 <= b2)  # x 0-based u's before w1; u_j index j (1-based)
                                 cc2 = sum(1 for x in range(0, b1 + 1) for y in range(0, b2 - x)
-                                          if x + y + 1 >= j)
+                                          if x + y >= j)
                                 if cc != cc2: pass
                                 race_cf = Fraction(cc2, U0)
                                 if race == race_cf: st['race_ok'] += 1
