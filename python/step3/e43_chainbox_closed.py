@@ -20,7 +20,7 @@ def build(r, a1, a2, sp, b1, b2):
     rel += [(u[k], u[k + 1]) for k in range(sp - 1)]   # U chain
     for j in range(a1 - 1): rel.append((j, w1))        # d_j < w1 (j < a1-1... 0-based: j < a1-1)
     for j in range(a2 - 1): rel.append((j, w2))
-    for j in range(b2, sp): rel.append((w1, u[j]))     # w1 < u_j (0-based j >= b2)
+    for j in range(b1, sp): rel.append((w1, u[j]))     # w1 < u_j (0-based j >= b1)
     for j in range(b2, sp): rel.append((w2, u[j]))
     L = my_close(n, rel)
     return L, n, w1, w2, u
@@ -49,8 +49,9 @@ def main():
                             eQD = e_of([v for v in range(n) if v not in set(Dset)])
                             eQI1 = e_of([v for v in range(n) if v not in set(I1)])
                             eQI2 = e_of([v for v in range(n) if v not in set(I2)])
+                            U0 = (b1 + 1) * (b2 + 1) - b1 * (b1 + 1) // 2
                             checks = [
-                                ("e(QD)", eQD, Wf),
+                                ("e(QD)", eQD, U0),
                                 ("e(QI1)", eQI1, b2 + 1),
                                 ("e(QI2)", eQI2, 1),
                             ]
