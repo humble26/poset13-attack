@@ -67,7 +67,8 @@ def main():
                                 QD = [v for v in range(n) if v != z and v != u[j - 1] and
                                       not (v == u[k - 1] and False for k in range(0))]
                                 # simpler: F0 minus u_j for the race: count extensions of F0 with w2 before u_j via added relation on F0
-                                QD = [v for v in range(n) if v != z]
+                                Dset = list(range(r))
+                                QD = [v for v in range(n) if v != z and v not in Dset]
                                 F0 = my_induced(L, QD)
                                 w1f, w2f, ujf = QD.index(w1), QD.index(w2), QD.index(uj)
                                 F0r = [row[:] for row in F0]
