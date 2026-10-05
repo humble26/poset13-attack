@@ -1,0 +1,3 @@
+'chain_isPoset' does not depend on any axioms
+'chain_e' depends on axioms: [propext]
+'anti_e' depends on axioms: [propext]

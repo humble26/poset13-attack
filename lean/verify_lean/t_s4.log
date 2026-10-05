@@ -1,0 +1,2 @@
+'s4a_true' depends on axioms: [propext, s4a_true._native.native_decide.ax_1_1]
+'s4_true' depends on axioms: [propext, s4_true._native.native_decide.ax_1_1]
