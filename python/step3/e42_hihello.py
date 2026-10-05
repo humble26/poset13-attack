@@ -45,7 +45,8 @@ def main():
             for z in range(n):
                 Qz = [v for v in range(n) if v != z]
                 mm = n - 1
-                Ql, idx = my_induced(L, mm, Qz)
+                Ql = my_induced(L, Qz)   # relabel in-place: Qz order == Ql order
+                idx = {v: k for k, v in enumerate(Qz)}
                 if not width_le2(Ql, mm): continue
                 # chain-box: find chain partition with |W|=2, w1<w2, D,U chains
                 # W = incomparable to z; need exactly 2, and they comparable to each other
