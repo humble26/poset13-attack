@@ -45,21 +45,19 @@ def main():
             for z in range(n):
                 Qz = [v for v in range(n) if v != z]
                 mm = n - 1
-                Ql = my_induced(L, Qz)   # relabel in-place: Qz order == Ql order
+                Ql = my_induced(L, Qz)   # relabel in Qz order
                 idx = {v: k for k, v in enumerate(Qz)}
                 if not width_le2(Ql, mm): continue
-                # chain-box: find chain partition with |W|=2, w1<w2, D,U chains
-                # W = incomparable to z; need exactly 2, and they comparable to each other
-                Wz = [v for v in range(mm) if not (Ql[v][idx[z]] or Ql[idx[z]][v])]
+                # W = global elements incomparable to z (use full poset L)
+                Wz = [v for v in Qz if not (L[v][z] or L[z][v])]
                 if len(Wz) != 2: continue
-                zq = idx[z]
                 w1, w2 = Wz
                 if Ql[w2][w1]:
                     w1, w2 = w2, w1
                 if not Ql[w1][w2]: continue  # need w1 < w2
                 # D,U chains? D = {v: v<z}, U = {v: z<v}
-                Dz = [v for v in range(mm) if Ql[v][zq]]
-                Uz = [v for v in range(mm) if Ql[zq][v]]
+                Dz = [v for v in Qz if L[v][z]]
+                Uz = [v for v in Qz if L[z][v]]
                 def is_chain(els):
                     return all(Ql[a][b] or Ql[b][a] for a, b in itertools.combinations(els, 2)) or len(els) <= 1
                 if not (is_chain(Dz) and is_chain(Uz)): continue
