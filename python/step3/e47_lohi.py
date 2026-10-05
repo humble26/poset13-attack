@@ -83,14 +83,24 @@ def main():
                                 cc = sum(1 for x in range(0, b1 + 1) for y in range(0, sp - x)
                                          if j <= x + y + 1 <= b2)  # x 0-based u's before w1; u_j index j (1-based)
                                 cc2 = sum(1 for x in range(0, b1 + 1) for y in range(0, b2 - x)
-                                          if x + y >= j)
+                                          if x + y + 1 <= j)  # w2 before u_j <=> j0 >= x+y (0-based)
                                 if cc != cc2: pass
                                 race_cf = Fraction(cc2, U0)
                                 if race == race_cf: st['race_ok'] += 1
                                 else: st['race_bad'] += 1
                                 pP = pval(L, n, w2, uj)
-                                # p_P(w2,u_j) = (1-m2) + m2*race
-                                pred = (1 - m2) + m2 * race
+                                # three-term: m1*raceD + mu1*raceI1 + mu2
+                                # raceI1(j) = (j0+1)/(beta2+1), j0 = j-1 (0-based)
+                                m2v = pval(L, n, z, w2)
+                                mu2v = 1 - m2v  # placeholder; real mu2 below
+                                # weights from cut masses: m1, mu1, mu2 via e-counts
+                                # m1 = U0/eP ; mu1 = N1*(b2+1)/eP ; mu2 = e2/eP
+                                N1 = r - a1 + 2
+                                N2 = r - a2 + 2
+                                e2c = (a2 - a1) * N2 + N2 * (N2 + 1) // 2
+                                U0c = (b1 + 1) * (b2 + 1) - b1 * (b1 + 1) // 2
+                                ePc = U0c + N1 * (b2 + 1) + e2c
+                                pred = Fraction(U0c, ePc) * race +                                        Fraction(N1 * (b2 + 1), ePc) * Fraction(j, b2 + 1) +                                        Fraction(e2c, ePc)
                                 if pP != pred:
                                     st['race_bad'] += 1
                                     if len(fails) < 4: fails.append(("pred", r, a1, a2, sp, b1, b2, str(pP), str(pred)))
